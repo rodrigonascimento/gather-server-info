@@ -4,6 +4,11 @@
     nics: []
 
   tasks: 
+    - name: Creating directory to collect info about the hosts
+      ansible.builtin.file: 
+        state: directory
+        path: /root/ntap-sysconfig-output
+
     - name: Gathering info about NUMA hardware list 
       ansible.builtin.shell:
         cmd: numactl --hardware
