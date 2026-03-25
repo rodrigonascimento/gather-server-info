@@ -2,12 +2,13 @@
   become: yes
   vars:
     nics: []
+    result_dir: /root/ntap-sysconfig-output
 
   tasks: 
     - name: Creating directory to collect info about the hosts
       ansible.builtin.file: 
         state: directory
-        path: /root/ntap-sysconfig-output
+        path: "{{ result_dir }}"
 
     - name: Gathering info about NUMA hardware list 
       ansible.builtin.shell:
@@ -31,9 +32,9 @@
         content: "{{ lookup('vars', item.name ) | to_nice_yaml }}"
         dest: "{{ item.file }}"
       loop: 
-        - { name: "output_numactl", file: "{{ inventory_hostname }}_numactl_hardware.txt" }
-        - { name: "output_nic_numa_node", file: "{{ inventory_hostname }}_nic_numa_node.txt" }
-        - { name: "output_nic_local_cpulist", file: "{{ inventory_hostname }}_nic_local_cpulist.txt" }
+        - { name: "output_numactl", file: "{{ result_dir }}/{{ inventory_hostname }}_numactl_hardware.txt" }
+        - { name: "output_nic_numa_node", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_numa_node.txt" }
+        - { name: "output_nic_local_cpulist", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_local_cpulist.txt" }
       delegate_to: localhost
 
 ##### TODO
