@@ -29,6 +29,7 @@
         - { name: "output_numactl", file: "{{ inventory_hostname }}_numactl_hardware.txt" }
         - { name: "output_nic_numa_node", file: "{{ inventory_hostname }}_nic_numa_node.txt" }
         - { name: "output_nic_local_cpulist", file: "{{ inventory_hostname }}_nic_local_cpulist.txt" }
+      delegated_to: localhost
 
 ##### TODO
     # - name: Disabling IRQ Balance
