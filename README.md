@@ -34,13 +34,7 @@ client-2.example.com
 
 ## Running the Playbook
 
-Basic run (no NIC-specific checks):
-
-```bash
-ansible-playbook -i hosts.ini environment-pre-check.yaml
-```
-
-With NIC interfaces specified at runtime:
+NIC interfaces specified at runtime:
 
 ```bash
 ansible-playbook -i hosts.ini environment-pre-check.yaml -e '{"nics": ["eth0", "eth1"]}'
