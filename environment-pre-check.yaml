@@ -45,7 +45,7 @@
     
     - name: Gathering info about MTU size
       ansible.builtin.shell:
-        cmd: "ip a {{ item }}"
+        cmd: "ip a | grep {{ item }}"
       loop: "{{ nics }}"
       register: output_nic_mtu_size
     
