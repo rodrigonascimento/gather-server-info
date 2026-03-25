@@ -1,0 +1,39 @@
+- hosts: fio_clients
+  become: yes
+  vars:
+    nics: []
+
+  tasks: 
+    - name: Gathering info about NUMA hardware list 
+      ansible.builtin.shell:
+        cmd: numactl --hardware
+      register: output_numactl
+    
+    - name: Gathering info about network interfaces and their NUMA node domain
+      ansible.builtin.shell:
+        cmd: "cat /sys/class/net/{{ item }}/device/numa_node"
+      loop: "{{ nics }}"
+      register: output_nic_numa_node
+
+    - name: Gathering info about network interfaces and their CPU lists
+      ansible.builtin.shell:
+        cmd: "cat /sys/class/net/{{ item }}/device/local_cpulist"
+      loop: "{{ nics }}"
+      register: output_nic_local_cpulist
+
+    - name: Flushing command output to files
+      ansible.builtin.copy:
+        content: "{{ lookup('vars', item.name ) | to_nice_yaml }}"
+        dest: "{{ item.file }}"
+      loop: 
+        - { name: "output_numactl", file: "{{ inventory_hostname }}_numactl_hardware.txt" }
+        - { name: "output_nic_numa_node", file: "{{ inventory_hostname }}_nic_numa_node.txt" }
+        - { name: "output_nic_local_cpulist", file: "{{ inventory_hostname }}_nic_local_cpulist.txt" }
+
+##### TODO
+    # - name: Disabling IRQ Balance
+    # - name: Checking the number of interrupt queues
+    # - name: Checking TX and RX queue sizes
+    # - name: Checking MTU size
+    # - name: Mellanox ONLY - Checking the MAX_ACC_OUT_READ
+    # - name: Checking PCIe Max Read Request
