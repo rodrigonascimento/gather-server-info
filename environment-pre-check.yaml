@@ -70,7 +70,7 @@
 
     - name: Flushing command output to files
       ansible.builtin.copy:
-        content: "{{ lookup('vars', item.name ) | to_nice_yaml }}"
+        content: "{{ lookup('vars', item.name ) | to_nice_json(indent=2) }}"
         dest: "{{ item.file }}"
       loop: 
         - { name: "output_numactl", file: "{{ result_dir }}/{{ inventory_hostname }}_numactl_hardware.json" }
