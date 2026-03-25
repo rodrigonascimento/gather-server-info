@@ -5,14 +5,20 @@
     result_dir: /root/ntap-sysconfig-output
 
   tasks:
-    # - name: Gathering PCI address per NIC 
-    #   ansible.builtin.shell:
-    #     cmd: "ethtool -i {{ item }} | grep bus-info | awk -F\"o: \" '{ print $2 }'"
-
     - name: Creating directory to collect info about the hosts
       ansible.builtin.file: 
         state: directory
         path: "{{ result_dir }}"
+
+    - name: Gathering general info about the OS
+      ansible.builtin.setup:
+        gather_subset: all
+      register: output_setup
+    
+    - name: Gathering kernel settings
+      ansible.builtin.shell:
+        cmd: sysctl -a 
+      register: output_sysctl
 
     - name: Gathering info about NUMA hardware list 
       ansible.builtin.shell:
@@ -66,20 +72,14 @@
         content: "{{ lookup('vars', item.name ) | to_nice_yaml }}"
         dest: "{{ item.file }}"
       loop: 
-        - { name: "output_numactl", file: "{{ result_dir }}/{{ inventory_hostname }}_numactl_hardware.txt" }
-        - { name: "output_nic_numa_node", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_numa_node.txt" }
-        - { name: "output_nic_local_cpulist", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_local_cpulist.txt" }
-        - { name: "output_nic_interrupt_handling", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_interrupt_handling.txt" }
-        - { name: "output_nic_tx_rx_queue_size", file: "{{ result_dir}}/{{ inventory_hostname }}_nic_tx_rx_queue_size.txt" }
-        - { name: "output_nic_mtu_size", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_mtu_size.txt" }
-        - { name: "output_pci_mrrs", file: "{{ result_dir }}/{{ inventory_hostname }}_pcie_mrrs.txt" }
-        - { name: "output_pci_10b_tags", file: "{{ result_dir }}/{{ inventory_hostname }}_pcie_10b_tags"}
+        - { name: "output_numactl", file: "{{ result_dir }}/{{ inventory_hostname }}_numactl_hardware.json" }
+        - { name: "output_nic_numa_node", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_numa_node.json" }
+        - { name: "output_nic_local_cpulist", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_local_cpulist.json" }
+        - { name: "output_nic_interrupt_handling", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_interrupt_handling.json" }
+        - { name: "output_nic_tx_rx_queue_size", file: "{{ result_dir}}/{{ inventory_hostname }}_nic_tx_rx_queue_size.json" }
+        - { name: "output_nic_mtu_size", file: "{{ result_dir }}/{{ inventory_hostname }}_nic_mtu_size.json" }
+        - { name: "output_pci_mrrs", file: "{{ result_dir }}/{{ inventory_hostname }}_pcie_mrrs.json" }
+        - { name: "output_pci_10b_tags", file: "{{ result_dir }}/{{ inventory_hostname }}_pcie_10b_tags.json"}
+        - { name: "output_setup", file: "{{ result_dir }}/{{ inventory_hostname }}_setup.json" }
+        - { name: "output_sysctl", file: "{{ result_dir }}/{{ inventory_hostname }}_sysctl.json" }
       delegate_to: localhost
-
-##### TODO
-    # - name: Disabling IRQ Balance
-    # - name: Checking the number of interrupt queues
-    # - name: Checking TX and RX queue sizes
-    # - name: Checking MTU size
-    # - name: Mellanox ONLY - Checking the MAX_ACC_OUT_READ
-    # - name: Checking PCIe Max Read Request
