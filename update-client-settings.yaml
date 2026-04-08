@@ -1,0 +1,36 @@
+- hosts: fio_clients
+  become: yes
+  vars:
+    nics: [ "enP22s22np0" ]
+  
+  tasks:
+    - name: Setting interface TX/RX queue size
+      ansible.builtin.shell:
+        cmd: "ehtool -G {{ item }} rx 8192 tx 8192"
+      loop: "{{ nics }}"
+      register: output_nic_tx_rx_queue_size
+    
+    - name: Setting PCIe Max Read Request
+      ansible.builtin.shell:
+        cmd: "setpci -s $(ethtool -i {{ item }} | grep bus-info | awk -F\"o: \" '{ print $2 }') cap_exp+8.w=5000:7000"
+      loop: "{{ nics }}"
+      register: output_pcie_max_read_request
+
+    - name: Setting .10b PCIe Tags
+      ansible.builtin.shell:
+        cmd: "setpci -s $(ethtool -i {{ item }} | grep bus-info | awk -F\"o: \" '{ print $2 }') cap_exp+28.w=1040:1040"
+      loop: "{{ nics }}"
+      register: output_pci_10b_tags
+
+    - name: Increasing networking buffer size due the NIC line rate (100/200/400 GbE)
+      ansible.posix.sysctl:
+        name: "{{ kernel_setting_name }}"
+        value: "{{ kernel_setting_value }}"
+        state: present
+        reload: yes
+      loop: 
+        - { "kernel_setting_name": "net.core.rmem_max", "kernel_setting_value": 16777216 }
+        - { "kernel_setting_name": "net.core.wmem_max", "kernel_setting_value": 16777216 }
+        - { "kernel_setting_name": "net.core.rmem_default", "kernel_setting_value": 16777216 }
+        - { "kernel_setting_name": "net.core.wmem_default", "kernel_setting_value": 16777216 }
+        - { "kernel_setting_name": "net.core.netdev_max_backlog", "kernel_setting_value": 250000 }
