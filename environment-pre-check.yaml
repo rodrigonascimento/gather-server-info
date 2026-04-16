@@ -15,7 +15,12 @@
       ansible.builtin.setup:
         gather_subset: all
       register: output_setup
-    
+
+    - name: Gathering PCIe info
+      ansible.builtin.shell:
+        cmd: lspci -vvv 
+      register: output_lspci
+
     - name: Gathering kernel settings
       ansible.builtin.shell:
         cmd: sysctl -a 
@@ -83,4 +88,5 @@
         - { name: "output_pci_10b_tags", file: "{{ result_dir }}/{{ inventory_hostname }}_pcie_10b_tags.json"}
         - { name: "output_setup", file: "{{ result_dir }}/{{ inventory_hostname }}_setup.json" }
         - { name: "output_sysctl", file: "{{ result_dir }}/{{ inventory_hostname }}_sysctl.json" }
+        - { name: "output_lspci", file: "{{ result_dir }}/{{ inventory_hostname }}_lspci.json" }
       delegate_to: localhost
